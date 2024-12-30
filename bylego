@@ -1,0 +1,70 @@
+local Players = game:GetService("Players")
+
+        local function AddAura(Character, Color)
+            for _, Part in pairs(Character:GetDescendants()) do
+                if Part:IsA("BasePart") then
+                    local Aura = Part:FindFirstChild("Aura")
+
+                    if not Aura then
+                        Aura = Instance.new("ParticleEmitter")
+                        Aura.Name = "Aura"
+
+                        Aura.LockedToPart = true
+                        Aura.Rate = 100
+                        Aura.LightEmission = 2
+                        Aura.Speed = NumberRange.new(0, 1)
+                        Aura.Lifetime = NumberRange.new(0.5, 0.5)
+                        Aura.Transparency = NumberSequence.new(0.7, 1)
+                        Aura.Enabled = true
+                        Aura.Texture = "rbxassetid://2389321787"
+                        Aura.Color = ColorSequence.new(Color)
+                        Aura.Parent = Part
+                    else
+                        Aura.Enabled = true
+                    end
+                end
+            end
+        end
+
+        local function OnCharacterAdded(Character)
+            local AuraColor = Color3.fromHSV(math.random(), 1, 1)
+            AddAura(Character, AuraColor)
+
+            Character.ChildAdded:Connect(function(Child)
+                if Child:IsA("BasePart") then
+                    AddAura(Character, AuraColor)
+                end
+            end)
+        end
+
+        local function OnPlayerAdded(Player)
+            Player.CharacterAdded:Connect(function()
+                OnCharacterAdded(Player.Character)
+            end)
+
+            coroutine.wrap(function()
+                wait(1)
+                AddAura(Player.Character, Color3.fromHSV(math.random(), 1, 1))
+            end)()
+        end
+
+        Players.PlayerAdded:Connect(OnPlayerAdded)
+
+        Players.PlayerRemoving:Connect(function(player)
+            local character = player.Character
+            if character then
+                for _, part in pairs(character:GetDescendants()) do
+                    local aura = part:FindFirstChild("Aura")
+                    if aura then
+                        aura.Enabled = false 
+                    end
+                end
+            end
+        end)
+
+        for _, player in pairs(Players:GetPlayers()) do
+            coroutine.wrap(function()
+                OnPlayerAdded(player)
+            end)()
+        end
+   end
